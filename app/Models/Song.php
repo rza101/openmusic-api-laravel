@@ -9,4 +9,10 @@ class Song extends Model
 {
     /** @use HasFactory<\Database\Factories\SongFactory> */
     use HasFactory;
+
+    protected $fillable = ['id', 'title', 'year', 'genre', 'performer', 'duration', 'album_id'];
+    protected $keyType = 'string';
+    
+    public $incrementing = false;
+    public $timestamps = false;
 }

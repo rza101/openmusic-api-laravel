@@ -17,7 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->respond(function (Response $response) {
-            return response(null, $response->getStatusCode());
-        });
+        if (app()->hasDebugModeEnabled()) {
+            $exceptions->respond(function (Response $response) {
+                return response(null, $response->getStatusCode());
+            });
+        }
     })->create();

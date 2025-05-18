@@ -26,7 +26,7 @@ class AlbumController extends Controller
             $request->all(),
             [
                 'name' => 'required|string',
-                'year' => 'required|integer',
+                'year' => 'required|integer|gte:1',
             ]
         );
 
@@ -83,7 +83,7 @@ class AlbumController extends Controller
             $request->all(),
             [
                 'name' => 'required|string',
-                'year' => 'required|integer',
+                'year' => 'required|integer|gte:1',
             ]
         );
 
