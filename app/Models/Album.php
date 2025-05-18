@@ -9,4 +9,10 @@ class Album extends Model
 {
     /** @use HasFactory<\Database\Factories\AlbumFactory> */
     use HasFactory;
+
+    protected $fillable = ['id', 'name', 'year'];
+    protected $keyType = 'string';
+    
+    public $incrementing = false;
+    public $timestamps = false;
 }
