@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\Song;
 use Hidehalo\Nanoid\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -57,9 +58,13 @@ class AlbumController extends Controller
      */
     public function show(string $id)
     {
-        $album = Album::find($id);
+        $album = Album::with('songs:id,title,performer,album_id')->find($id);
 
         if ($album) {
+            $album->songs->each(function ($song) {
+                $song->makeHidden(['album_id']);
+            });
+
             return response()->json([
                 'status' => 'success',
                 'data' => [

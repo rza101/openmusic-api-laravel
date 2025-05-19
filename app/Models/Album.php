@@ -12,7 +12,12 @@ class Album extends Model
 
     protected $fillable = ['id', 'name', 'year'];
     protected $keyType = 'string';
-    
+
     public $incrementing = false;
     public $timestamps = false;
+
+    public function songs()
+    {
+        return $this->hasMany(Song::class, 'album_id', 'id');
+    }
 }

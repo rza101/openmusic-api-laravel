@@ -12,12 +12,26 @@ class SongController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $songs = Song::select(['id', 'title', 'performer']);
+
+        $title = $request->query('title');
+
+        if (!empty($title)) {
+            $songs->whereLike('title', "%{$title}%");
+        }
+
+        $performer = $request->query('performer');
+
+        if (!empty($performer)) {
+            $songs->whereLike('performer', "%{$performer}%");
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => [
-                'songs' => Song::all(['id', 'title', 'performer'])
+                'songs' => $songs->get()
             ]
         ]);
     }

@@ -12,7 +12,12 @@ class Song extends Model
 
     protected $fillable = ['id', 'title', 'year', 'genre', 'performer', 'duration', 'album_id'];
     protected $keyType = 'string';
-    
+
     public $incrementing = false;
     public $timestamps = false;
+
+    public function album()
+    {
+        return $this->belongsTo(Album::class, 'album_id', 'id');
+    }
 }
