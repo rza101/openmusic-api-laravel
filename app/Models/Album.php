@@ -2,21 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Album extends Model
 {
-    /** @use HasFactory<\Database\Factories\AlbumFactory> */
-    use HasFactory;
-
     protected $fillable = ['id', 'name', 'year'];
     protected $keyType = 'string';
 
     public $incrementing = false;
     public $timestamps = false;
 
-    public function songs()
+    public function Songs()
     {
         return $this->hasMany(Song::class, 'album_id', 'id');
     }
