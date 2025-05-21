@@ -3,24 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
-use App\Models\Song;
 use Hidehalo\Nanoid\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class AlbumController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private $nanoid;
+
+    public function __construct()
+    {
+        $this->nanoid = new Client();
+    }
+
     public function index()
     {
         return response(null, 404);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make(
@@ -38,10 +38,8 @@ class AlbumController extends Controller
             ], 400);
         }
 
-        $nanoid = new Client();
-
         $album = Album::create([
-            'id' => 'album_' . $nanoid->generateId(32),
+            'id' => 'album_' . $this->nanoid->generateId(32),
             ...$validator->validate()
         ]);
 
@@ -53,15 +51,12 @@ class AlbumController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $album = Album::with('songs:id,title,performer,album_id')->find($id);
+        $album = Album::with('Songs:id,title,performer,album_id')->find($id);
 
         if ($album) {
-            $album->songs->each(function ($song) {
+            $album->Songs->each(function ($song) {
                 $song->makeHidden(['album_id']);
             });
 
@@ -70,7 +65,7 @@ class AlbumController extends Controller
                 'data' => [
                     'album' => $album
                 ]
-            ], 200);
+            ]);
         } else {
             return response()->json([
                 'status' => 'fail',
@@ -79,9 +74,6 @@ class AlbumController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $validator = Validator::make(
@@ -107,7 +99,7 @@ class AlbumController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Album updated successfully'
-            ], 200);
+            ]);
         } else {
             return response()->json([
                 'status' => 'fail',
@@ -116,9 +108,6 @@ class AlbumController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $album = Album::find($id);
@@ -129,7 +118,7 @@ class AlbumController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Album deleted successfully'
-            ], 200);
+            ]);
         } else {
             return response()->json([
                 'status' => 'fail',

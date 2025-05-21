@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    private $nanoid;
+
+    public function __construct()
+    {
+        $this->nanoid = new Client();
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make(
@@ -28,7 +35,6 @@ class UserController extends Controller
             ], 400);
         }
 
-        $nanoid = new Client();
         $validated = $validator->validate();
 
         if (User::where('username', $validated['username'])->first()) {
@@ -39,7 +45,7 @@ class UserController extends Controller
         }
 
         $user = User::create([
-            'id' => 'user_' . $nanoid->generateId(32),
+            'id' => 'user_' . $this->nanoid->generateId(32),
             'username' => $validated['username'],
             'password' => Hash::make($validated['password']),
             'fullname' => $validated['fullname'],

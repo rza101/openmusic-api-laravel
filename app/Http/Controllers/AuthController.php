@@ -83,7 +83,7 @@ class AuthController extends Controller
 
         if ($authentication) {
             $refreshToken = $authentication->refresh_token;
-            $refreshTokenClaims = $this->jwtService->parseRefreshToken($refreshToken)->claims();
+            $refreshTokenClaims = $this->jwtService->parseToken($refreshToken)->claims();
 
             $user = User::find($refreshTokenClaims->get('userId'));
 
@@ -100,7 +100,7 @@ class AuthController extends Controller
                     'data' => [
                         'accessToken' => $accessToken,
                     ]
-                ], 200);
+                ]);
             }
         }
 
@@ -135,7 +135,7 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Authentication deleted successfully'
-            ], 200);
+            ]);
         } else {
             return response()->json([
                 'status' => 'fail',

@@ -5,14 +5,24 @@ namespace App\Services;
 use DateTimeImmutable;
 use Exception;
 use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\Token\Plain;
+use Lcobucci\JWT\Validation\Constraint\HasClaim;
+use Lcobucci\JWT\Validation\Constraint\IssuedBy;
+use Lcobucci\JWT\Validation\Constraint\PermittedFor;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
+use Lcobucci\JWT\Validation\Validator;
+use Symfony\Component\Clock\NativeClock;
 
 class JwtService
 {
-    protected $jwtAccessTokenConfig;
-    protected $jwtRefreshTokenConfig;
+    private $jwtAccessTokenConfig;
+    private $jwtRefreshTokenConfig;
+    private $clock;
 
     public function __construct()
     {
@@ -31,63 +41,85 @@ class JwtService
             new Sha256(),
             InMemory::base64Encoded($jwtRefreshTokenSecret)
         );
+        $this->clock = new NativeClock();
     }
 
     public function generateAccessToken($user)
     {
         $now = new DateTimeImmutable();
+        $builder = $this->jwtAccessTokenConfig->builder()
+            ->issuedBy('http://openmusic.api') // iss
+            ->permittedFor('http://openmusic.api') // aud
+            ->expiresAt($now->modify('+15 minutes')) // exp
+            ->canOnlyBeUsedAfter($now) // nbf
+            ->issuedAt($now) // iat
+            ->withClaim('userId', $user->id);
+        $token = $builder->getToken(
+            $this->jwtAccessTokenConfig->signer(),
+            $this->jwtAccessTokenConfig->signingKey()
+        );
 
-        return $this->jwtAccessTokenConfig->builder()
-            ->issuedBy('http://openmusic.api')
-            ->permittedFor('http://openmusic.api')
-            ->identifiedBy(bin2hex(random_bytes(16)), true)
-            ->issuedAt($now)
-            ->canOnlyBeUsedAfter($now)
-            ->expiresAt($now->modify('+15 minutes'))
-            ->withClaim('userId', $user->id)
-            ->getToken($this->jwtAccessTokenConfig->signer(), $this->jwtAccessTokenConfig->signingKey())
-            ->toString();
+        return $token->toString();
     }
 
     public function generateRefreshToken($user)
     {
         $now = new DateTimeImmutable();
+        $builder = $this->jwtRefreshTokenConfig->builder()
+            ->issuedBy('http://openmusic.api') // iss
+            ->permittedFor('http://openmusic.api') // aud
+            ->expiresAt($now->modify('+24 hour')) // exp
+            ->canOnlyBeUsedAfter($now) // nbf
+            ->issuedAt($now) // iat
+            ->withClaim('userId', $user->id);
+        $token = $builder->getToken(
+            $this->jwtRefreshTokenConfig->signer(),
+            $this->jwtRefreshTokenConfig->signingKey()
+        );
 
-        return $this->jwtRefreshTokenConfig->builder()
-            ->issuedBy('http://openmusic.api')
-            ->permittedFor('http://openmusic.api')
-            ->identifiedBy(bin2hex(random_bytes(16)), true)
-            ->issuedAt($now)
-            ->canOnlyBeUsedAfter($now)
-            ->expiresAt($now->modify('+24 hour'))
-            ->withClaim('userId', $user->id)
-            ->getToken($this->jwtRefreshTokenConfig->signer(), $this->jwtRefreshTokenConfig->signingKey())
-            ->toString();
+        return $token->toString();
     }
 
     public function validateAccessToken($tokenString)
     {
-        $token = $this->parseAccessToken($tokenString);
-        $constraints = $this->jwtAccessTokenConfig->validationConstraints();
+        $token = $this->parseToken($tokenString);
 
-        return $this->jwtAccessTokenConfig->validator()->validate($token, ...$constraints);
+        $validator = new Validator();
+        $constraints = [
+            new SignedWith(
+                $this->jwtAccessTokenConfig->signer(),
+                $this->jwtAccessTokenConfig->signingKey()
+            ),
+            new StrictValidAt($this->clock),
+            new IssuedBy('http://openmusic.api'),
+            new PermittedFor('http://openmusic.api'),
+            new HasClaim('userId'),
+        ];
+
+        return $validator->validate($token, ...$constraints);
     }
 
     public function validateRefreshToken($tokenString)
     {
-        $token = $this->parseRefreshToken($tokenString);
-        $constraints = $this->jwtRefreshTokenConfig->validationConstraints();
+        $token = $this->parseToken($tokenString);
 
-        return $this->jwtRefreshTokenConfig->validator()->validate($token, ...$constraints);
+        $validator = new Validator();
+        $constraints = [
+            new SignedWith(
+                $this->jwtRefreshTokenConfig->signer(),
+                $this->jwtRefreshTokenConfig->signingKey()
+            ),
+            new StrictValidAt($this->clock),
+            new IssuedBy('http://openmusic.api'),
+            new PermittedFor('http://openmusic.api'),
+            new HasClaim('userId'),
+        ];
+
+        return $validator->validate($token, ...$constraints);
     }
 
-    public function parseAccessToken($tokenString): Plain
+    public function parseToken($tokenString): Plain
     {
-        return $this->jwtAccessTokenConfig->parser()->parse($tokenString);
-    }
-
-    public function parseRefreshToken($tokenString): Plain
-    {
-        return $this->jwtRefreshTokenConfig->parser()->parse($tokenString);
+        return new Parser(new JoseEncoder())->parse($tokenString);
     }
 }

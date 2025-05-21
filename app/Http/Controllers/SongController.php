@@ -9,9 +9,13 @@ use Illuminate\Support\Facades\Validator;
 
 class SongController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private $nanoid;
+
+    public function __construct()
+    {
+        $this->nanoid = new Client();
+    }
+
     public function index(Request $request)
     {
         $songs = Song::select(['id', 'title', 'performer']);
@@ -36,9 +40,6 @@ class SongController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make(
@@ -60,7 +61,6 @@ class SongController extends Controller
             ], 400);
         }
 
-        $nanoid = new Client();
         $validated = $validator->validate();
 
         if (isset($validated['albumId'])) {
@@ -68,7 +68,7 @@ class SongController extends Controller
         }
 
         $song = Song::create([
-            'id' => 'song_' . $nanoid->generateId(32),
+            'id' => 'song_' . $this->nanoid->generateId(32),
             ...$validated
         ]);
 
@@ -80,9 +80,6 @@ class SongController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $song = Song::find($id);
@@ -93,7 +90,7 @@ class SongController extends Controller
                 'data' => [
                     'song' => $song
                 ]
-            ], 200);
+            ]);
         } else {
             return response()->json([
                 'status' => 'fail',
@@ -102,9 +99,6 @@ class SongController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $validator = Validator::make(
@@ -140,7 +134,7 @@ class SongController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Song updated successfully'
-            ], 200);
+            ]);
         } else {
             return response()->json([
                 'status' => 'fail',
@@ -149,9 +143,6 @@ class SongController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $song = Song::find($id);
@@ -162,7 +153,7 @@ class SongController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Song deleted successfully'
-            ], 200);
+            ]);
         } else {
             return response()->json([
                 'status' => 'fail',

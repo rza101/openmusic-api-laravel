@@ -21,29 +21,34 @@ class JwtMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        $tokenString = $request->bearerToken();
-
-        if (!$tokenString) {
-            return response()->json(['error' => 'Token not provided'], 401);
-        }
-
         try {
-            $token = $this->jwtService->parseAccessToken($tokenString);
+            $accessTokenString = $request->bearerToken();
 
-            if (!$this->jwtService->validateAccessToken($tokenString)) {
+            if (!$accessTokenString) {
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'Token not provided'
+                ], 401);
+            }
+
+            if (!$this->jwtService->validateAccessToken($accessTokenString)) {
                 return response()->json([
                     'status' => 'fail',
                     'message' => 'Invalid or expired token'
                 ], 401);
             }
 
-            $userId = $token->claims()->get('userId');
-            $user = User::findOrFail($userId);
+            $accessToken = $this->jwtService->parseToken($accessTokenString);
 
-            $request->setUserResolver(fn() => $user);
-            Auth::setUser($user);
+            $userId = $accessToken->claims()->get('userId');
+            $user = User::find($userId);
 
-            return $next($request);
+            if ($user) {
+                Auth::setUser($user);
+                return $next($request);
+            } else {
+                throw new Exception('User not found');
+            }
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'fail',
