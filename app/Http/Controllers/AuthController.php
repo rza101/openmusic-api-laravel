@@ -31,14 +31,15 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid authentication data'
+                'message' => 'Invalid parameters'
             ], 400);
         }
 
-        $validated = $validator->validate();
-        $user = User::where('username', $validated['username'])->first();
+        $validatedData = $validator->validate();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        $user = User::where('username', $validatedData['username'])->first();
+
+        if (!$user || !Hash::check($validatedData['password'], $user->password)) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Invalid credentials'
@@ -74,12 +75,13 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid authentication data'
+                'message' => 'Invalid parameters'
             ], 400);
         }
 
-        $validated = $validator->validate();
-        $authentication = Authentication::where('refresh_token', $validated['refreshToken'])->first();
+        $validatedData = $validator->validate();
+
+        $authentication = Authentication::where('refresh_token', $validatedData['refreshToken'])->first();
 
         if ($authentication) {
             $refreshToken = $authentication->refresh_token;
@@ -122,16 +124,17 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid authentication data'
+                'message' => 'Invalid parameters'
             ], 400);
         }
 
-        $validated = $validator->validate();
+        $validatedData = $validator->validate();
 
-        $authentications = Authentication::where('refresh_token', $validated['refreshToken']);
+        $authentications = Authentication::where('refresh_token', $validatedData['refreshToken']);
 
         if ($authentications->count() > 0) {
             $authentications->delete();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Authentication deleted successfully'

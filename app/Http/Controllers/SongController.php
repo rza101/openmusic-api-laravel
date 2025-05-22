@@ -57,19 +57,19 @@ class SongController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid song data'
+                'message' => 'Invalid parameters',
             ], 400);
         }
 
-        $validated = $validator->validate();
+        $validatedData = $validator->validate();
 
-        if (isset($validated['albumId'])) {
-            $validated['album_id'] = $validated['albumId'];
+        if (isset($validatedData['albumId'])) {
+            $validatedData['album_id'] = $validatedData['albumId'];
         }
 
         $song = Song::create([
             'id' => 'song_' . $this->nanoid->generateId(32),
-            ...$validated
+            ...$validatedData
         ]);
 
         return response()->json([
@@ -116,20 +116,20 @@ class SongController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid song data'
+                'message' => 'Invalid parameters',
             ], 400);
         }
 
-        $validated = $validator->validate();
+        $validatedData = $validator->validate();
 
-        if (isset($validated['albumId'])) {
-            $validated['album_id'] = $validated['albumId'];
+        if (isset($validatedData['albumId'])) {
+            $validatedData['album_id'] = $validatedData['albumId'];
         }
 
         $song = Song::find($id);
 
         if ($song) {
-            $song->update($validated);
+            $song->update($validatedData);
 
             return response()->json([
                 'status' => 'success',

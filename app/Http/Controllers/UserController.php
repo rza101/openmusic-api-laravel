@@ -31,13 +31,13 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid user data'
+                'message' => 'Invalid parameters',
             ], 400);
         }
 
-        $validated = $validator->validate();
+        $validatedData = $validator->validate();
 
-        if (User::where('username', $validated['username'])->first()) {
+        if (User::where('username', $validatedData['username'])->first()) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Username already used'
@@ -46,9 +46,9 @@ class UserController extends Controller
 
         $user = User::create([
             'id' => 'user_' . $this->nanoid->generateId(32),
-            'username' => $validated['username'],
-            'password' => Hash::make($validated['password']),
-            'fullname' => $validated['fullname'],
+            'username' => $validatedData['username'],
+            'password' => Hash::make($validatedData['password']),
+            'fullname' => $validatedData['fullname'],
         ]);
 
         return response()->json([

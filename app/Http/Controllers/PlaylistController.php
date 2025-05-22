@@ -21,16 +21,16 @@ class PlaylistController extends Controller
     {
         $user = Auth::user();
 
-        $playlists = Playlist::with(['PlaylistCollaborations', 'Owner'])
+        $playlistsData = Playlist::with(['PlaylistCollaborations', 'Owner'])
             ->where('owner', $user->id)
             ->orWhereHas('PlaylistCollaborations',  function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->get();
-        $playlistsData = [];
+        $playlists = [];
 
-        foreach ($playlists as $playlist) {
-            array_push($playlistsData, [
+        foreach ($playlistsData as $playlist) {
+            array_push($playlists, [
                 'id' => $playlist->id,
                 'name' => $playlist->name,
                 'username' => $playlist->Owner->username,
@@ -40,7 +40,7 @@ class PlaylistController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'playlists' => $playlistsData
+                'playlists' => $playlists
             ]
         ]);
     }
@@ -57,14 +57,16 @@ class PlaylistController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid playlist data'
+                'message' => 'Invalid parameters',
             ], 400);
         }
+
+        $validatedData = $validator->validate();
 
         $user = Auth::user();
         $playlist = Playlist::create([
             'id' => 'playlist_' . $this->nanoid->generateId(32),
-            'name' => $validator->validate()['name'],
+            'name' => $validatedData['name'],
             'owner' => $user->id,
         ]);
 

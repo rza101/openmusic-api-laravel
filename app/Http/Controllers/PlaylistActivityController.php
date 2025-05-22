@@ -9,8 +9,6 @@ class PlaylistActivityController extends Controller
 {
     public function show(string $id)
     {
-        $user = Auth::user();
-
         $playlist = Playlist::with(['PlaylistActivities.User', 'PlaylistActivities.Song'])->find($id);
 
         if (!$playlist) {
@@ -19,6 +17,8 @@ class PlaylistActivityController extends Controller
                 'message' => 'Playlist not found'
             ], 404);
         }
+
+        $user = Auth::user();
 
         if ($playlist->Owner->id != $user->id) {
             return response()->json([

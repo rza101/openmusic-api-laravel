@@ -34,13 +34,15 @@ class AlbumController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid album data'
+                'message' => 'Invalid parameters'
             ], 400);
         }
 
+        $validatedData = $validator->validate();
+
         $album = Album::create([
             'id' => 'album_' . $this->nanoid->generateId(32),
-            ...$validator->validate()
+            ...$validatedData
         ]);
 
         return response()->json([
@@ -87,14 +89,16 @@ class AlbumController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid album data'
+                'message' => 'Invalid parameters'
             ], 400);
         }
+
+        $validatedData = $validator->validate();
 
         $album = Album::find($id);
 
         if ($album) {
-            $album->update($validator->validate());
+            $album->update($validatedData);
 
             return response()->json([
                 'status' => 'success',

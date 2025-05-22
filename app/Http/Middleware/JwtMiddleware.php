@@ -22,26 +22,24 @@ class JwtMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $accessTokenString = $request->bearerToken();
+            $accessToken = $request->bearerToken();
 
-            if (!$accessTokenString) {
+            if (!$accessToken) {
                 return response()->json([
                     'status' => 'fail',
-                    'message' => 'Token not provided'
+                    'message' => 'Bearer token not provided'
                 ], 401);
             }
 
-            if (!$this->jwtService->validateAccessToken($accessTokenString)) {
+            if (!$this->jwtService->validateAccessToken($accessToken)) {
                 return response()->json([
                     'status' => 'fail',
-                    'message' => 'Invalid or expired token'
+                    'message' => 'Invalid or expired bearer token'
                 ], 401);
             }
 
-            $accessToken = $this->jwtService->parseToken($accessTokenString);
-
-            $userId = $accessToken->claims()->get('userId');
-            $user = User::find($userId);
+            $accessTokenData = $this->jwtService->parseToken($accessToken);
+            $user = User::find($accessTokenData->claims()->get('userId'));
 
             if ($user) {
                 Auth::setUser($user);
@@ -52,7 +50,7 @@ class JwtMiddleware
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'fail',
-                'message' => $e->getMessage()
+                'message' => 'Authentication failed'
             ], 401);
         }
     }

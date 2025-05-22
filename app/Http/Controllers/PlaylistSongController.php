@@ -32,9 +32,11 @@ class PlaylistSongController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid playlist song data'
+                'message' => 'Invalid parameters',
             ], 400);
         }
+
+        $validatedData = $validator->validated();
 
         $playlist = Playlist::with('PlaylistCollaborations')->find($id);
 
@@ -45,7 +47,7 @@ class PlaylistSongController extends Controller
             ], 404);
         }
 
-        $song = Song::find($validator->validated()['songId']);
+        $song = Song::find($validatedData['songId']);
 
         if (!$song) {
             return response()->json([
@@ -55,6 +57,7 @@ class PlaylistSongController extends Controller
         }
 
         $user = Auth::user();
+
         $isCollaborator = $playlist->PlaylistCollaborations()
             ->where('playlist_id', $playlist->id)
             ->where('user_id', $user->id)
@@ -84,7 +87,7 @@ class PlaylistSongController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Song added successfully'
+            'message' => 'Playlist song added successfully'
         ], 201);
     }
 
@@ -100,6 +103,7 @@ class PlaylistSongController extends Controller
         }
 
         $user = Auth::user();
+
         $isCollaborator = $playlist->PlaylistCollaborations()
             ->where('playlist_id', $playlist->id)
             ->where('user_id', $user->id)
@@ -150,11 +154,11 @@ class PlaylistSongController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid playlist song data'
+                'message' => 'Invalid parameters',
             ], 400);
         }
 
-        $validated = $validator->validate();
+        $validatedData = $validator->validate();
 
         $playlist = Playlist::with('PlaylistCollaborations')->find($id);
 
@@ -166,6 +170,7 @@ class PlaylistSongController extends Controller
         }
 
         $user = Auth::user();
+
         $isCollaborator = $playlist->PlaylistCollaborations()
             ->where('playlist_id', $playlist->id)
             ->where('user_id', $user->id)
@@ -180,13 +185,13 @@ class PlaylistSongController extends Controller
 
         PlaylistSong::where([
             ['playlist_id', $id],
-            ['song_id', $validated['songId']],
+            ['song_id', $validatedData['songId']],
         ])->delete();
 
         PlaylistActivity::create([
             'id' => 'playlist_activity_' . $this->nanoid->generateId(32),
             'playlist_id' => $id,
-            'song_id' => $validated['songId'],
+            'song_id' => $validatedData['songId'],
             'user_id' => $user->id,
             'action' => 'delete',
             'time' => now(),
@@ -194,7 +199,7 @@ class PlaylistSongController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Playlist song deleted successfully'
+            'message' => 'Playlist song removed successfully'
         ]);
     }
 }

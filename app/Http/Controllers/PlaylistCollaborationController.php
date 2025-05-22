@@ -32,13 +32,13 @@ class PlaylistCollaborationController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid collaboration data',
+                'message' => 'Invalid parameters',
             ], 400);
         }
 
-        $validated = $validator->validate();
+        $validatedData = $validator->validate();
 
-        $playlist = Playlist::find($validated['playlistId']);
+        $playlist = Playlist::find($validatedData['playlistId']);
 
         if (!$playlist) {
             return response()->json([
@@ -56,7 +56,7 @@ class PlaylistCollaborationController extends Controller
             ], 403);
         }
 
-        $collaboratorUser = User::find($validated['userId']);
+        $collaboratorUser = User::find($validatedData['userId']);
 
         if (!$collaboratorUser) {
             return response()->json([
@@ -72,11 +72,11 @@ class PlaylistCollaborationController extends Controller
         if ($isCollaborationExists) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Collaboration already exists',
+                'message' => 'Playlist collaboration already exists',
             ], 400);
         }
 
-        $collaboration = PlaylistCollaboration::create([
+        $playlistCollaboration = PlaylistCollaboration::create([
             'id' => 'collaboration_' . $this->nanoid->generateId(32),
             'playlist_id' => $playlist->id,
             'user_id' => $collaboratorUser->id,
@@ -85,7 +85,7 @@ class PlaylistCollaborationController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'collaborationId' => $collaboration->id,
+                'collaborationId' => $playlistCollaboration->id,
             ]
         ], 201);
     }
@@ -103,27 +103,28 @@ class PlaylistCollaborationController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Invalid collaboration data',
+                'message' => 'Invalid parameters',
             ], 400);
         }
 
-        $validated = $validator->validate();
-        $user = Auth::user();
+        $validatedData = $validator->validate();
 
-        $collaboration = PlaylistCollaboration::with('Playlist.Owner')
-            ->where('playlist_id', $validated['playlistId'])
-            ->where('user_id', $validated['userId'])
+        $playlistCollaboration = PlaylistCollaboration::with('Playlist.Owner')
+            ->where('playlist_id', $validatedData['playlistId'])
+            ->where('user_id', $validatedData['userId'])
             ->first();
 
-        if ($collaboration) {
-            if ($collaboration->Playlist->Owner->id != $user->id) {
+        if ($playlistCollaboration) {
+            $user = Auth::user();
+
+            if ($playlistCollaboration->Playlist->Owner->id != $user->id) {
                 return response()->json([
                     'status' => 'fail',
                     'message' => 'Playlist collaboration cannot be modified',
                 ], 403);
             }
 
-            $collaboration->delete();
+            $playlistCollaboration->delete();
 
             return response()->json([
                 'status' => 'success',
@@ -132,7 +133,7 @@ class PlaylistCollaborationController extends Controller
         } else {
             return response()->json([
                 'status' => 'success',
-                'message' => 'Collaboration not found'
+                'message' => 'Playlist collaboration not found'
             ], 404);
         }
     }
