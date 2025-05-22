@@ -20,10 +20,17 @@ class PlaylistController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $playlists = [];
 
-        foreach (Playlist::with('Owner')->where('owner', $user->id)->get() as $playlist) {
-            array_push($playlists, [
+        $playlists = Playlist::with(['PlaylistCollaborations', 'Owner'])
+            ->where('owner', $user->id)
+            ->orWhereHas('PlaylistCollaborations',  function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->get();
+        $playlistsData = [];
+
+        foreach ($playlists as $playlist) {
+            array_push($playlistsData, [
                 'id' => $playlist->id,
                 'name' => $playlist->name,
                 'username' => $playlist->Owner->username,
@@ -33,7 +40,7 @@ class PlaylistController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'playlists' => $playlists
+                'playlists' => $playlistsData
             ]
         ]);
     }

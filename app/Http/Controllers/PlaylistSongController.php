@@ -35,7 +35,7 @@ class PlaylistSongController extends Controller
             ], 400);
         }
 
-        $playlist = Playlist::find($id);
+        $playlist = Playlist::with('PlaylistCollaborations')->find($id);
 
         if (!$playlist) {
             return response()->json([
@@ -54,8 +54,12 @@ class PlaylistSongController extends Controller
         }
 
         $user = Auth::user();
+        $isCollaborator = $playlist->PlaylistCollaborations()
+            ->where('playlist_id', $playlist->id)
+            ->where('user_id', $user->id)
+            ->exists();
 
-        if ($playlist->Owner->id != $user->id) {
+        if ($playlist->Owner->id != $user->id && !$isCollaborator) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Playlist cannot be modified'
@@ -76,7 +80,7 @@ class PlaylistSongController extends Controller
 
     public function show(string $id)
     {
-        $playlist = Playlist::with('PlaylistSongs.Song')->find($id);
+        $playlist = Playlist::with(['PlaylistCollaborations', 'PlaylistSongs.Song'])->find($id);
 
         if (!$playlist) {
             return response()->json([
@@ -86,8 +90,12 @@ class PlaylistSongController extends Controller
         }
 
         $user = Auth::user();
+        $isCollaborator = $playlist->PlaylistCollaborations()
+            ->where('playlist_id', $playlist->id)
+            ->where('user_id', $user->id)
+            ->exists();
 
-        if ($playlist->Owner->id != $user->id) {
+        if ($playlist->Owner->id != $user->id && !$isCollaborator) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Playlist cannot be viewed'
@@ -113,7 +121,7 @@ class PlaylistSongController extends Controller
                 'playlist' => [
                     'id' => $playlist->id,
                     'name' => $playlist->name,
-                    'username' => $user->username,
+                    'username' => $playlist->Owner->username,
                     'songs' => $playlistSongs,
                 ]
             ]
@@ -136,7 +144,7 @@ class PlaylistSongController extends Controller
             ], 400);
         }
 
-        $playlist = Playlist::find($id);
+        $playlist = Playlist::with('PlaylistCollaborations')->find($id);
 
         if (!$playlist) {
             return response()->json([
@@ -146,8 +154,12 @@ class PlaylistSongController extends Controller
         }
 
         $user = Auth::user();
+        $isCollaborator = $playlist->PlaylistCollaborations()
+            ->where('playlist_id', $playlist->id)
+            ->where('user_id', $user->id)
+            ->exists();
 
-        if ($playlist->Owner->id != $user->id) {
+        if ($playlist->Owner->id != $user->id && !$isCollaborator) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Playlist cannot be modified'
