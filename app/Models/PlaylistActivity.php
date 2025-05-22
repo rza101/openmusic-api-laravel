@@ -16,4 +16,14 @@ class PlaylistActivity extends Model
     {
         return $this->belongsTo(Playlist::class, 'playlist_id', 'id');
     }
+
+    public function Song()
+    {
+        return $this->belongsTo(Song::class, 'song_id', 'id');
+    }
+
+    public function User()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

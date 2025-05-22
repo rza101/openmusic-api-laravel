@@ -21,4 +21,9 @@ class Song extends Model
     {
         return $this->hasMany(PlaylistSong::class, 'playlist_id', 'id');
     }
+
+    public function PlaylistActivities()
+    {
+        return $this->hasMany(PlaylistActivity::class, 'playlist_id', 'id');
+    }
 }

@@ -29,4 +29,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(PlaylistCollaboration::class, 'user_id', 'id');
     }
+
+    public function PlaylistActivities()
+    {
+        return $this->hasMany(PlaylistActivity::class, 'user_id', 'id');
+    }
 }

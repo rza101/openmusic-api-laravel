@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Playlist;
+use App\Models\PlaylistActivity;
 use App\Models\PlaylistSong;
 use App\Models\Song;
 use Hidehalo\Nanoid\Client;
@@ -70,6 +71,15 @@ class PlaylistSongController extends Controller
             'id' => 'playlist_song_' . $this->nanoid->generateId(32),
             'playlist_id' => $playlist->id,
             'song_id' => $song->id,
+        ]);
+
+        PlaylistActivity::create([
+            'id' => 'playlist_activity_' . $this->nanoid->generateId(32),
+            'playlist_id' => $playlist->id,
+            'song_id' => $song->id,
+            'user_id' => $user->id,
+            'action' => 'add',
+            'time' => now(),
         ]);
 
         return response()->json([
@@ -144,6 +154,8 @@ class PlaylistSongController extends Controller
             ], 400);
         }
 
+        $validated = $validator->validate();
+
         $playlist = Playlist::with('PlaylistCollaborations')->find($id);
 
         if (!$playlist) {
@@ -168,8 +180,17 @@ class PlaylistSongController extends Controller
 
         PlaylistSong::where([
             ['playlist_id', $id],
-            ['song_id', $validator->validated()['songId']],
+            ['song_id', $validated['songId']],
         ])->delete();
+
+        PlaylistActivity::create([
+            'id' => 'playlist_activity_' . $this->nanoid->generateId(32),
+            'playlist_id' => $id,
+            'song_id' => $validated['songId'],
+            'user_id' => $user->id,
+            'action' => 'delete',
+            'time' => now(),
+        ]);
 
         return response()->json([
             'status' => 'success',
