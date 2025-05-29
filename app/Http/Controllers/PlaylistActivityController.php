@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Playlist;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class PlaylistActivityController extends Controller
@@ -40,7 +41,7 @@ class PlaylistActivityController extends Controller
                     'username' => $playlistActivity->User->username,
                     'title' => $playlistActivity->Song->title,
                     'action' => $playlistActivity->action,
-                    'time' => date('Y-m-d\TH:i:s.v\Z', strtotime($playlistActivity->time)),
+                    'time' => new Carbon($playlistActivity->time)->format('Y-m-d\TH:i:s.v\Z'),
                 ]
             );
         }

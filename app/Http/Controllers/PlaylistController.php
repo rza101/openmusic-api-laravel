@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ExportPlaylistEmailJob;
 use App\Models\Playlist;
 use Hidehalo\Nanoid\Client;
 use Illuminate\Http\Request;
@@ -43,6 +44,53 @@ class PlaylistController extends Controller
                 'playlists' => $playlists
             ]
         ]);
+    }
+
+    public function export(Request $request, string $id)
+    {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'targetEmail' => 'required|email',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Invalid parameters',
+            ], 400);
+        }
+
+        $validatedData = $validator->validate();
+
+        $playlist = Playlist::with(['PlaylistCollaborations', 'PlaylistSongs.Song'])->find($id);
+
+        if (!$playlist) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Playlist not found'
+            ], 404);
+        }
+
+        $user = Auth::user();
+
+        if ($playlist->Owner->id != $user->id) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Playlist cannot be exported'
+            ], 403);
+        }
+
+        ExportPlaylistEmailJob::dispatch(
+            $playlist,
+            $validatedData['targetEmail'],
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Playlist exported successfully'
+        ], 201);
     }
 
     public function store(Request $request)

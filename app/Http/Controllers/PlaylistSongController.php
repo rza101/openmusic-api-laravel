@@ -82,7 +82,7 @@ class PlaylistSongController extends Controller
             'song_id' => $song->id,
             'user_id' => $user->id,
             'action' => 'add',
-            'time' => now(),
+            'time' => now()->format('Y-m-d H:i:s.v'),
         ]);
 
         return response()->json([
@@ -194,7 +194,7 @@ class PlaylistSongController extends Controller
             'song_id' => $validatedData['songId'],
             'user_id' => $user->id,
             'action' => 'delete',
-            'time' => now(),
+            'time' => now()->format('Y-m-d H:i:s.v'),
         ]);
 
         return response()->json([

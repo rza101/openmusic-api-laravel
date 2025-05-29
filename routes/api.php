@@ -23,6 +23,7 @@ Route::apiResource('/songs', SongController::class);
 Route::middleware('auth.jwt')->group(function () {
     Route::post('/playlists', [PlaylistController::class, 'store']);
     Route::get('/playlists', [PlaylistController::class, 'index']);
+    Route::post('/export/playlists/{id}', [PlaylistController::class, 'export']);
     Route::delete('/playlists/{id}', [PlaylistController::class, 'destroy']);
 
     Route::post('/playlists/{id}/songs', [PlaylistSongController::class, 'store']);
