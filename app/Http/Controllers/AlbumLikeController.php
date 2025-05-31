@@ -6,6 +6,7 @@ use App\Models\Album;
 use App\Models\UserAlbumLike;
 use Hidehalo\Nanoid\Client;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redis;
 
 class AlbumLikeController extends Controller
 {
@@ -47,6 +48,8 @@ class AlbumLikeController extends Controller
             'album_id' => $album->id,
         ]);
 
+        Redis::del('album_likes_' . $album->id);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Album liked'
@@ -55,6 +58,23 @@ class AlbumLikeController extends Controller
 
     public function show(string $id)
     {
+        $cachedUserAlbumLikeCount = Redis::get('album_likes_' . $id);
+
+        if ($cachedUserAlbumLikeCount && is_numeric($cachedUserAlbumLikeCount)) {
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        'likes' => intval($cachedUserAlbumLikeCount),
+                    ]
+                ],
+                200,
+                [
+                    'X-Data-Source' => 'cache'
+                ]
+            );
+        }
+
         $album = Album::find($id);
 
         if (!$album) {
@@ -65,6 +85,13 @@ class AlbumLikeController extends Controller
         }
 
         $userAlbumLikeCount = UserAlbumLike::where('album_id', $album->id)->count();
+
+        Redis::set(
+            'album_likes_' . $id,
+            $userAlbumLikeCount,
+            'EX',
+            1800
+        );
 
         return response()->json([
             'status' => 'success',
@@ -100,6 +127,8 @@ class AlbumLikeController extends Controller
         }
 
         $userAlbumLike->delete();
+
+        Redis::del('album_likes_' . $album->id);
 
         return response()->json([
             'status' => 'success',
