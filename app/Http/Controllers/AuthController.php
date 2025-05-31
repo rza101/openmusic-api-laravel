@@ -132,18 +132,18 @@ class AuthController extends Controller
 
         $authentications = Authentication::where('refresh_token', $validatedData['refreshToken']);
 
-        if ($authentications->count() > 0) {
-            $authentications->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Authentication deleted successfully'
-            ]);
-        } else {
+        if ($authentications->count() <= 0) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Authentication not found'
             ], 400);
         }
+
+        $authentications->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Authentication deleted successfully'
+        ]);
     }
 }

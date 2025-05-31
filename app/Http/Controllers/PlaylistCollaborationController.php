@@ -114,27 +114,27 @@ class PlaylistCollaborationController extends Controller
             ->where('user_id', $validatedData['userId'])
             ->first();
 
-        if ($playlistCollaboration) {
-            $user = Auth::user();
-
-            if ($playlistCollaboration->Playlist->Owner->id != $user->id) {
-                return response()->json([
-                    'status' => 'fail',
-                    'message' => 'Playlist collaboration cannot be modified',
-                ], 403);
-            }
-
-            $playlistCollaboration->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Playlist collaboration deleted successfully'
-            ]);
-        } else {
+        if (!$playlistCollaboration) {
             return response()->json([
                 'status' => 'success',
                 'message' => 'Playlist collaboration not found'
             ], 404);
         }
+
+        $user = Auth::user();
+
+        if ($playlistCollaboration->Playlist->Owner->id != $user->id) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Playlist collaboration cannot be modified',
+            ], 403);
+        }
+
+        $playlistCollaboration->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Playlist collaboration deleted successfully'
+        ]);
     }
 }

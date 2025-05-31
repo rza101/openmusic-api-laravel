@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\AlbumLikeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PlaylistActivityController;
 use App\Http\Controllers\PlaylistCollaborationController;
@@ -19,6 +20,7 @@ Route::delete('/authentications', [AuthController::class, 'destroy']);
 Route::apiResource('/albums', AlbumController::class);
 Route::post('/albums/{id}/covers', [AlbumController::class, 'storeCoverImage']);
 Route::get('/albums/{id}/covers', [AlbumController::class, 'showCoverImage'])->name('albums.showCoverImage');
+Route::get('/albums/{id}/likes', [AlbumLikeController::class, 'show']);
 
 Route::apiResource('/songs', SongController::class);
 
@@ -36,4 +38,7 @@ Route::middleware('auth.jwt')->group(function () {
     Route::delete('/collaborations', [PlaylistCollaborationController::class, 'destroy']);
 
     Route::get('/playlists/{id}/activities', [PlaylistActivityController::class, 'show']);
+
+    Route::post('/albums/{id}/likes', [AlbumLikeController::class, 'store']);
+    Route::delete('/albums/{id}/likes', [AlbumLikeController::class, 'destroy']);
 });

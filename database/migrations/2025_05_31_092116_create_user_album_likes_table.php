@@ -8,20 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('songs', function (Blueprint $table) {
+        Schema::create('user_album_likes', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->string('title');
-            $table->unsignedInteger('year');
-            $table->string('performer');
-            $table->string('genre');
-            $table->unsignedInteger('duration')->nullable();
+            $table->string('user_id');
             $table->string('album_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
             $table->foreign('album_id')->references('id')->on('albums')->onDelete('CASCADE');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('songs');
+        Schema::dropIfExists('user_album_likes');
     }
 };

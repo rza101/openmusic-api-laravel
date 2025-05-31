@@ -41,12 +41,13 @@ class JwtMiddleware
             $accessTokenData = $this->jwtService->parseToken($accessToken);
             $user = User::find($accessTokenData->claims()->get('userId'));
 
-            if ($user) {
-                Auth::setUser($user);
-                return $next($request);
-            } else {
+            if (!$user) {
                 throw new Exception('User not found');
             }
+
+            Auth::setUser($user);
+
+            return $next($request);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'fail',

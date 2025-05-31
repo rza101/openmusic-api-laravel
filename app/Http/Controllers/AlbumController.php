@@ -113,28 +113,29 @@ class AlbumController extends Controller
     {
         $album = Album::with('Songs:id,title,performer,album_id')->find($id);
 
-        if ($album) {
-            $album->Songs->each(function ($song) {
-                $song->makeHidden(['album_id']);
-            });
-
-            return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'album' => [
-                        'id' => $album->id,
-                        'name' => $album->name,
-                        'year' => $album->year,
-                        'coverUrl' => $album->cover ? route('albums.showCoverImage', $album->id) : null,
-                    ]
-                ]
-            ]);
-        } else {
+        if (!$album) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Album not found'
             ], 404);
         }
+
+        $album->Songs->each(function ($song) {
+            $song->makeHidden(['album_id']);
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'album' => [
+                    'id' => $album->id,
+                    'name' => $album->name,
+                    'year' => $album->year,
+                    'coverUrl' => $album->cover ? route('albums.showCoverImage', $album->id) : null,
+                    'songs' => $album->Songs
+                ]
+            ]
+        ]);
     }
 
     public function showCoverImage(string $id)
@@ -176,37 +177,37 @@ class AlbumController extends Controller
 
         $album = Album::find($id);
 
-        if ($album) {
-            $album->update($validatedData);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Album updated successfully'
-            ]);
-        } else {
+        if (!$album) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Album not found'
             ], 404);
         }
+
+        $album->update($validatedData);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Album updated successfully'
+        ]);
     }
 
     public function destroy(string $id)
     {
         $album = Album::find($id);
 
-        if ($album) {
-            $album->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Album deleted successfully'
-            ]);
-        } else {
+        if (!$album) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Album not found'
             ], 404);
         }
+
+        $album->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Album deleted successfully'
+        ]);
     }
 }

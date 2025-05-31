@@ -130,27 +130,27 @@ class PlaylistController extends Controller
     {
         $playlist = Playlist::find($id);
 
-        if ($playlist) {
-            $user = Auth::user();
-
-            if ($playlist->Owner->id != $user->id) {
-                return response()->json([
-                    'status' => 'fail',
-                    'message' => 'Playlist cannot be modified'
-                ], 403);
-            }
-
-            $playlist->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Playlist deleted successfully'
-            ]);
-        } else {
+        if (!$playlist) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Playlist not found'
             ], 404);
         }
+
+        $user = Auth::user();
+
+        if ($playlist->Owner->id != $user->id) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Playlist cannot be modified'
+            ], 403);
+        }
+
+        $playlist->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Playlist deleted successfully'
+        ]);
     }
 }

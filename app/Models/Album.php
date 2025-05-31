@@ -16,4 +16,9 @@ class Album extends Model
     {
         return $this->hasMany(Song::class, 'album_id', 'id');
     }
+
+    public function UserAlbumLikes()
+    {
+        return $this->hasMany(UserAlbumLike::class, 'album_id', 'id');
+    }
 }

@@ -84,19 +84,19 @@ class SongController extends Controller
     {
         $song = Song::find($id);
 
-        if ($song) {
-            return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'song' => $song
-                ]
-            ]);
-        } else {
+        if (!$song) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Song not found'
             ], 404);
         }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'song' => $song
+            ]
+        ]);
     }
 
     public function update(Request $request, string $id)
@@ -128,37 +128,37 @@ class SongController extends Controller
 
         $song = Song::find($id);
 
-        if ($song) {
-            $song->update($validatedData);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Song updated successfully'
-            ]);
-        } else {
+        if (!$song) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Song not found'
             ], 404);
         }
+
+        $song->update($validatedData);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Song updated successfully'
+        ]);
     }
 
     public function destroy(string $id)
     {
         $song = Song::find($id);
 
-        if ($song) {
-            $song->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Song deleted successfully'
-            ]);
-        } else {
+        if (!$song) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Song not found'
             ], 404);
         }
+
+        $song->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Song deleted successfully'
+        ]);
     }
 }
