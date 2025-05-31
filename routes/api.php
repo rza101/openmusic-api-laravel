@@ -17,6 +17,8 @@ Route::put('/authentications', [AuthController::class, 'update']);
 Route::delete('/authentications', [AuthController::class, 'destroy']);
 
 Route::apiResource('/albums', AlbumController::class);
+Route::post('/albums/{id}/covers', [AlbumController::class, 'storeCoverImage']);
+Route::get('/albums/{id}/covers', [AlbumController::class, 'showCoverImage'])->name('albums.showCoverImage');
 
 Route::apiResource('/songs', SongController::class);
 
